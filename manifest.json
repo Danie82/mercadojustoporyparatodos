@@ -1,0 +1,28 @@
+{
+  "name": "Mercado Justo",
+  "short_name": "MercadoJusto",
+  "description": "Precios reales publicados por tu comunidad. Ahorra más, compra mejor.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F4F1",
+  "theme_color": "#E63946",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "https://placehold.co/192x192/E63946/FFFFFF/png?text=MJ",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://placehold.co/512x512/E63946/FFFFFF/png?text=MJ",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "categories": ["shopping", "lifestyle", "utilities"]
+}
