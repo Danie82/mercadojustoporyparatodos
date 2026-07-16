@@ -987,10 +987,21 @@ function cardNeg(n){
       <button class="btn-ver" onclick="toggleDen(${n.id})">Ver (${n.denuncias.length})</button>
     </div>
     <div class="den-panel" id="den-${n.id}">
-      ${!n.denuncias.length?'<div style="font-size:12.5px;color:var(--gris-texto)">Sin denuncias aún.</div>':n.denuncias.map(d=>`<div class="den-item"><div class="den-user">👤 ${d.user} · ${d.fecha}</div>${d.texto}${d.evidencia?'<div style="font-size:11px;color:var(--rojo);font-weight:600;margin-top:3px">📎 Con evidencia</div>':''}</div>`).join('')}
+      ${!n.denuncias.length?'<div style="font-size:12.5px;color:var(--gris-texto)">Sin denuncias aún.</div>':n.denuncias.map(d=>`<div class="den-item"><div class="den-user">👤 ${d.user} · ${d.fecha}</div>${d.texto}${d.foto?`<img src="${d.foto}" class="preview-img" style="margin-top:6px;display:block">`:''}${(d.dir||d.ref)?`<div style="font-size:11px;color:var(--gris-texto);margin-top:4px">📍 ${[d.dir,d.ref].filter(Boolean).join(' · ')}</div>`:''}${d.evidencia?'<div style="font-size:11px;color:var(--rojo);font-weight:600;margin-top:3px">📎 Con evidencia</div>':''}</div>`).join('')}
       <div class="den-form">
         <div style="font-size:12px;font-weight:600;margin-bottom:5px">+ Agregar denuncia</div>
         <textarea id="dt-${n.id}" placeholder="Describe qué pasó. Sé específico y objetivo. Mientras más detalle, más útil es para la comunidad..." rows="3"></textarea>
+        <div class="upload-zone" style="padding:10px;margin-top:7px" onclick="document.getElementById('df-${n.id}').click()">
+          <div style="font-size:20px">📷</div>
+          <p>📸 Si tienes una foto del local, ayuda mucho a los demás (opcional)</p>
+        </div>
+        <input type="file" id="df-${n.id}" accept="image/*" style="display:none" onchange="previewDenImg(${n.id},event)">
+        <div class="upload-preview" id="dfp-${n.id}"></div>
+        <div style="display:flex;gap:6px;margin-top:7px">
+          <input type="text" id="dda-${n.id}" placeholder="Dirección (opcional)" style="flex:1;border:1px solid var(--gris-borde);border-radius:6px;padding:7px;font-size:12.5px;font-family:'DM Sans',sans-serif">
+          <input type="text" id="dre-${n.id}" placeholder="Referencia, ej: al lado del Líder (opcional)" style="flex:1;border:1px solid var(--gris-borde);border-radius:6px;padding:7px;font-size:12.5px;font-family:'DM Sans',sans-serif">
+        </div>
+        <p style="font-size:10.5px;color:var(--gris-texto);margin-top:4px">📍 Agregar dirección o referencia ayuda a que la comunidad ubique el local (opcional)</p>
         <div style="display:flex;gap:7px;align-items:center;margin-top:6px">
           <button class="btn-send" onclick="envDen(${n.id})">Publicar</button>
           <span style="font-size:11px;color:var(--gris-texto)">+6 pts</span>
@@ -1003,13 +1014,35 @@ function cardNeg(n){
 function toggleDen(id){document.getElementById('den-'+id).classList.toggle('open')}
 function funarNeg(id){const n=E.negocios.find(x=>x.id===id);n.funas++;sumarPts(6);save();toast('🚨 +6 pts — Denuncia registrada');renderNegocios();setTimeout(()=>document.getElementById('den-'+id).classList.add('open'),50)}
 function likeNeg(id){const n=E.negocios.find(x=>x.id===id);n.likes++;sumarPts(2);save();toast('👍 +2 pts — Gracias');renderNegocios()}
+function previewDenImg(id,ev){
+  const w=document.getElementById('dfp-'+id);w.innerHTML='';
+  const f=ev.target.files[0];
+  if(!f)return;
+  const img=document.createElement('img');img.src=URL.createObjectURL(f);img.className='preview-img';w.appendChild(img);
+}
+
 function envDen(id){
   const txt=document.getElementById('dt-'+id).value.trim();
   if(!txt){toast('⚠️ Escribe tu denuncia primero');return;}
   const n=E.negocios.find(x=>x.id===id);
-  n.denuncias.push({user:E.perfil.nombre||'Anónimo',texto:txt,fecha:'ahora',evidencia:false});
-  n.funas++;sumarPts(6);save();toast('📢 +6 pts — Denuncia publicada');renderNegocios();
-  setTimeout(()=>document.getElementById('den-'+id).classList.add('open'),50);
+  const dirIn=document.getElementById('dda-'+id).value.trim();
+  const refIn=document.getElementById('dre-'+id).value.trim();
+  const fileInp=document.getElementById('df-'+id);
+  const file=fileInp.files[0];
+
+  const guardar=(fotoData)=>{
+    n.denuncias.push({user:E.perfil.nombre||'Anónimo',texto:txt,fecha:'ahora',evidencia:!!fotoData,foto:fotoData||null,dir:dirIn||null,ref:refIn||null});
+    n.funas++;sumarPts(6);save();toast('📢 +6 pts — Denuncia publicada');renderNegocios();
+    setTimeout(()=>document.getElementById('den-'+id).classList.add('open'),50);
+  };
+
+  if(file){
+    const reader=new FileReader();
+    reader.onload=e=>guardar(e.target.result);
+    reader.readAsDataURL(file);
+  }else{
+    guardar(null);
+  }
 }
 
 function abrirNuevoNegocio(){
